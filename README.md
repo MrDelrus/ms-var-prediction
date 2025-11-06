@@ -1,1 +1,1 @@
-# markov-switching-model
+# ms-var-prediction
