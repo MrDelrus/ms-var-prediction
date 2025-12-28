@@ -133,9 +133,15 @@ class MarkovSwitchingVaR(BaseEstimator, RegressorMixin):
             Estimated VaR.
         """
         n = self.n_states
+        if self._params is None:
+            raise ValueError("_params is None. Fit the model first.")
         mus = self._params[:n].astype(np.float64)
         sigmas = self._params[n : 2 * n].astype(np.float64)
+
+        if self._state_probs is None:
+            raise ValueError("_state_probs is None. Fit the model first.")
         weights = self._state_probs.astype(np.float64)
+
         return np.float64(
             quantile_bisection(
                 gaussian_mixture_cdf, var_alpha, -1, 1, mus, sigmas, weights
