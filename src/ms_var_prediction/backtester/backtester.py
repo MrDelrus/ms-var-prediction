@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.stats as ss
 
-from ms_var_prediction.evaluation.var_metrics import (
+from ms_var_prediction.backtester.var_tests import (
     kupiec_test,
     christoffersen_independence_test,
     christoffersen_test,

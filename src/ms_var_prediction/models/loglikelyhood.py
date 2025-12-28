@@ -1,6 +1,6 @@
 import numpy as np
 from numba import njit
-from ms_var_prediction.utils import norm_pdf
+from ms_var_prediction.utils import gaussian_pdf
 
 
 @njit
@@ -37,11 +37,11 @@ def loglikelyhood_gaussian(params: np.ndarray, returns: np.ndarray, n_states: in
         prob_next = state_probs[t, :] @ P
         likelihood_t = 0.0
         for i in range(n_states):
-            likelihood_t += prob_next[i] * norm_pdf(returns[t], mus[i], sigmas[i])
+            likelihood_t += prob_next[i] * gaussian_pdf(returns[t], mus[i], sigmas[i])
         rho[t + 1] = likelihood_t
         for i in range(n_states):
             state_probs[t + 1, i] = (
-                prob_next[i] * norm_pdf(returns[t], mus[i], sigmas[i]) / rho[t + 1]
+                prob_next[i] * gaussian_pdf(returns[t], mus[i], sigmas[i]) / rho[t + 1]
             )
 
     nll = -np.sum(np.log(rho))

@@ -1,7 +1,13 @@
 import numpy as np
+import pandas as pd
 from math import exp, sqrt, pi, erf
 from numba import njit
 from typing import Callable
+
+
+def prices_to_returns(prices: pd.Series) -> np.ndarray:
+    """Convert price series to log returns."""
+    return np.log(prices / prices.shift(1)).dropna().values
 
 
 @njit
