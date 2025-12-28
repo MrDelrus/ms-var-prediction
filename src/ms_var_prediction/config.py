@@ -11,5 +11,9 @@ class Settings(BaseSettings):
     ALPHA: float
     WINDOW_SHAPE: int
 
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+
 
 settings = Settings()
