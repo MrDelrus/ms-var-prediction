@@ -9,8 +9,6 @@ from ms_var_prediction import (
 from typing import List
 from yfinance import Ticker
 
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-
 
 def run_gmm(tickers: List[Ticker]) -> None:
     gmm_model = GaussianMixtureVaR()
@@ -43,6 +41,7 @@ def run_msm(tickers: List[Ticker]) -> None:
 
 
 if __name__ == "__main__":
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     tickers = fetch_valid_sp500_tickers(settings.START_DATE, settings.END_DATE)
     run_gmm(tickers)
     run_msm(tickers)

@@ -17,6 +17,7 @@ RUN poetry config virtualenvs.create false \
     && poetry install --no-interaction --no-ansi
 
 COPY src /app/src
+COPY .env /app/.env
 
 ENV PYTHONPATH=/app/src
 
