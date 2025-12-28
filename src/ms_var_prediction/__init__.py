@@ -5,7 +5,7 @@ from ms_var_prediction.pipeline import (
     batch_backtest_model,
     fetch_valid_sp500_tickers,
 )
-from ms_var_prediction.config import PROJECT_ROOT
+from ms_var_prediction.config import PROJECT_ROOT, OUTPUT_DIR, settings
 
 __all__ = [
     "Backtester",
@@ -15,4 +15,6 @@ __all__ = [
     "batch_backtest_model",
     "fetch_valid_sp500_tickers",
     "PROJECT_ROOT",
+    "OUTPUT_DIR",
+    "settings",
 ]
