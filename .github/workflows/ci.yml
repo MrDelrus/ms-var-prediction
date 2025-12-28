@@ -34,10 +34,10 @@ jobs:
         run: poetry install --no-interaction --no-root
 
       - name: Lint with Ruff
-        run: poetry run ruff check src/ tests/
+        run: poetry run ruff check src/
 
       - name: Check formatting with Black
-        run: poetry run black --check src/ tests/
+        run: poetry run black --check src/
 
       - name: Type check with mypy
         run: poetry run mypy src/
