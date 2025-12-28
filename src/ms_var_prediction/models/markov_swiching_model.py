@@ -3,7 +3,7 @@ from scipy import optimize
 from sklearn.base import BaseEstimator, RegressorMixin
 from ms_var_prediction.utils import quantile_bisection, gaussian_mixture_cdf
 from ms_var_prediction.models.loglikelyhood import loglikelyhood_gaussian
-from typing import Optional, Dict
+from typing import Any, Optional, Dict
 
 _ALLOWED_OPTIM_METHODS = ["powell", "BFGS", "L-BFGS-B", "CG", "Nelder-Mead", "TNC"]
 
@@ -32,6 +32,9 @@ class MarkovSwitchingVaR(BaseEstimator, RegressorMixin):
     _state_probs : np.ndarray
         Probabilities of each state at the last observation.
     """
+
+    _params: Optional[np.ndarray]
+    _state_probs: Optional[np.ndarray]
 
     def __init__(
         self,
@@ -69,7 +72,7 @@ class MarkovSwitchingVaR(BaseEstimator, RegressorMixin):
         self._params = init_params
         self._state_probs = None
 
-    def fit(self, returns, y=None):
+    def fit(self, returns: np.ndarray, y: Optional[Any] = None) -> "MarkovSwitchingVaR":
         """
         Fit the MS model to returns.
 
@@ -115,7 +118,7 @@ class MarkovSwitchingVaR(BaseEstimator, RegressorMixin):
         _, self._state_probs = loglikelyhood_gaussian(self._params, returns_arr, n)
         return self
 
-    def predict(self, var_alpha):
+    def predict(self, var_alpha: float) -> np.float64:
         """
         Compute Value-at-Risk at a given alpha.
 

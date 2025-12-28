@@ -1,7 +1,7 @@
 import yfinance as yf
 import numpy as np
 import pandas as pd
-from typing import List
+from typing import List, Tuple
 from sklearn.base import BaseEstimator
 from tqdm.auto import tqdm
 
@@ -13,7 +13,7 @@ from ms_var_prediction.logger import logger
 
 def rolling_returns_and_var(
     model: BaseEstimator, returns: np.ndarray, alpha: float, window_shape: int
-) -> tuple[np.ndarray, np.ndarray]:
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     Perform rolling-window model fitting and VaR prediction.
 
@@ -56,7 +56,7 @@ def ticker_evaluate_var(
     end_date: str,
     alpha: float,
     window_shape: int,
-) -> dict[str, int]:
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     Compute rolling-window returns and VaR predictions for a single ticker.
 

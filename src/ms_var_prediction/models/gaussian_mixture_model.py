@@ -2,6 +2,7 @@ import numpy as np
 from sklearn.mixture import GaussianMixture
 from sklearn.base import BaseEstimator, RegressorMixin
 from ms_var_prediction.utils import quantile_bisection, gaussian_mixture_cdf
+from typing import Any, Optional
 
 
 class GaussianMixtureVaR(BaseEstimator, RegressorMixin):
@@ -34,7 +35,13 @@ class GaussianMixtureVaR(BaseEstimator, RegressorMixin):
         Covariances of each component.
     """
 
-    def __init__(self, n_components=2, covariance_type="full", tol=1e-4, max_iter=100):
+    def __init__(
+        self,
+        n_components: int = 2,
+        covariance_type: str = "full",
+        tol: float = 1e-4,
+        max_iter: int = 100,
+    ) -> None:
         if not isinstance(n_components, int) or n_components < 1:
             raise ValueError("n_components must be integer >= 1")
         self.n_components = n_components
@@ -56,7 +63,7 @@ class GaussianMixtureVaR(BaseEstimator, RegressorMixin):
         self.means_ = None
         self.covariances_ = None
 
-    def fit(self, returns: np.ndarray, y=None) -> "GaussianMixtureVaR":
+    def fit(self, returns: np.ndarray, y: Optional[Any] = None) -> "GaussianMixtureVaR":
         """
         Fit the Gaussian mixture model to return data.
 

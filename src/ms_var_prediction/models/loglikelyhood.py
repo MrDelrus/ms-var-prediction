@@ -1,10 +1,13 @@
 import numpy as np
 from numba import njit
 from ms_var_prediction.utils import gaussian_pdf
+from typing import Tuple
 
 
 @njit
-def loglikelyhood_gaussian(params: np.ndarray, returns: np.ndarray, n_states: int):
+def loglikelyhood_gaussian(
+    params: np.ndarray, returns: np.ndarray, n_states: int
+) -> Tuple[np.float64, np.ndarray]:
     """
     Compute negative log-likelihood and final state probabilities for N-state Gaussian MS model.
 
