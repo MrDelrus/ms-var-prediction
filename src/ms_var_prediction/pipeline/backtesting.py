@@ -57,6 +57,32 @@ def ticker_evaluate_var(
     alpha: float,
     window_shape: int,
 ) -> dict[str, int]:
+    """
+    Compute rolling-window returns and VaR predictions for a single ticker.
+
+    Parameters
+    ----------
+    model : BaseEstimator
+        Model with .fit() and .predict() methods, used for rolling VaR estimation.
+    ticker : yf.Ticker
+        Yahoo Finance Ticker object to fetch price history for.
+    start_date : str
+        Start date for price history in 'YYYY-MM-DD' format.
+    end_date : str
+        End date for price history in 'YYYY-MM-DD' format (exclusive).
+    alpha : float
+        Significance level for VaR.
+    window_shape : int
+        Number of observations used for each rolling window fit.
+
+    Returns
+    -------
+    tuple of np.ndarray
+        returns : np.ndarray
+            Rolling returns corresponding to the period after the first window.
+        var_series : np.ndarray
+            Predicted Value-at-Risk for each rolling window.
+    """
     logger.debug("Started backtesting for %s", ticker.ticker)
     data = cached_history(ticker, start_date, end_date)
     prices = data["Close"].dropna()
