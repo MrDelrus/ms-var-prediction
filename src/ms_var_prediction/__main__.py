@@ -11,7 +11,7 @@ from yfinance import Ticker
 
 
 def run_gmm(tickers: List[Ticker]) -> None:
-    gmm_model = GaussianMixtureVaR()
+    gmm_model = GaussianMixtureVaR(max_iter=1000)
     gmm_res = batch_backtest_model(
         gmm_model,
         tickers,
@@ -26,7 +26,7 @@ def run_gmm(tickers: List[Ticker]) -> None:
 
 
 def run_msm(tickers: List[Ticker]) -> None:
-    msm_model = MarkovSwitchingVaR()
+    msm_model = MarkovSwitchingVaR(optimizer_options={"max_iter": 1000})
     msm_res = batch_backtest_model(
         msm_model,
         tickers,
