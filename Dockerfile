@@ -14,10 +14,11 @@ ENV PATH="/root/.local/bin:$PATH"
 COPY pyproject.toml poetry.lock* /app/
 
 RUN poetry config virtualenvs.create false \
-    && poetry install --no-interaction --no-ansi
+    && poetry install --no-root --no-interaction --no-ansi
 
-COPY src /app/src
+COPY README.md /app/README.md
 COPY .env /app/.env
+COPY src /app/src
 
 ENV PYTHONPATH=/app/src
 
