@@ -1,6 +1,7 @@
 import numpy as np
 from numba import njit
 from ms_var_prediction.utils import gaussian_pdf
+from ms_var_prediction.constants import EPS, SIGMA_EPS
 from typing import Tuple
 
 
@@ -29,7 +30,7 @@ def loglikelyhood_gaussian(
     """
     n = returns.shape[0]
     mus = params[:n_states]
-    sigmas = params[n_states : 2 * n_states]
+    sigmas = np.maximum(params[n_states : 2 * n_states], SIGMA_EPS)
     P = params[2 * n_states :].reshape((n_states, n_states))
 
     rho = np.ones(n + 1, dtype=np.float64)
@@ -38,14 +39,18 @@ def loglikelyhood_gaussian(
 
     for t in range(n):
         prob_next = state_probs[t, :] @ P
+        pdf_vals = np.empty(n_states, dtype=np.float64)
+        for i in range(n_states):
+            pdf_vals[i] = gaussian_pdf(returns[t], mus[i], sigmas[i])
+
         likelihood_t = 0.0
         for i in range(n_states):
-            likelihood_t += prob_next[i] * gaussian_pdf(returns[t], mus[i], sigmas[i])
-        rho[t + 1] = likelihood_t
-        for i in range(n_states):
-            state_probs[t + 1, i] = (
-                prob_next[i] * gaussian_pdf(returns[t], mus[i], sigmas[i]) / rho[t + 1]
-            )
+            likelihood_t += prob_next[i] * pdf_vals[i]
 
+        rho[t + 1] = max(likelihood_t, EPS)
+        for i in range(n_states):
+            state_probs[t + 1, i] = prob_next[i] * pdf_vals[i] / rho[t + 1]
+
+    rho = np.maximum(rho, EPS)
     nll = -np.sum(np.log(rho))
     return np.float64(nll), state_probs[-1]

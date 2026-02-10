@@ -3,6 +3,7 @@ import pandas as pd
 from math import exp, sqrt, pi, erf
 from numba import njit
 from typing import Callable
+from ms_var_prediction.constants import SIGMA_EPS
 
 
 def prices_to_returns(prices: pd.Series) -> np.ndarray:
@@ -64,6 +65,7 @@ def gaussian_cdf(x: float, mean: float, std: float) -> np.float64:
     """
     Compute the CDF of a Gaussian distribution.
     """
+    std = max(abs(std), SIGMA_EPS)
     z = (x - mean) / std
     return np.float64(0.5 * (1.0 + erf(z / sqrt(2.0))))
 
@@ -73,6 +75,7 @@ def gaussian_pdf(x: float, mean: float, std: float) -> np.float64:
     """
     Compute the PDF of a Gaussian distribution.
     """
+    std = max(abs(std), SIGMA_EPS)
     u = (x - mean) / abs(std)
     y = exp(-0.5 * u * u) / (sqrt(2.0 * pi) * abs(std))
     return np.float64(y)

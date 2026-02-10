@@ -1,0 +1,2 @@
+SIGMA_EPS = 1e-6
+EPS = 1e-12
