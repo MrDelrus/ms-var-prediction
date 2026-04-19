@@ -58,7 +58,7 @@ def plot_var(
                 df.index,
                 df["return"],
                 color=_RETURNS_COLOUR,
-                alpha=1.0,
+                alpha=0.7,
                 linewidth=0.9,
                 label="Returns",
                 zorder=2,
@@ -75,16 +75,6 @@ def plot_var(
             linewidth=1.6,
             label=f"{model_name}  VaR α={alpha_val:.2f}",
             zorder=3,
-        )
-
-        breaches = df[df["return"] < df["var"]]
-        ax.scatter(
-            breaches.index,
-            breaches["return"],
-            color=colour,
-            s=30,
-            zorder=4,
-            label=f"{model_name}  breaches ({len(breaches)})",
         )
 
     ax.axhline(0, color="#aaaaaa", linewidth=0.6, linestyle="--", zorder=1)
