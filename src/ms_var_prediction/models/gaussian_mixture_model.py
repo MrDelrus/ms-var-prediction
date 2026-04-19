@@ -95,6 +95,24 @@ class GaussianMixtureVaR(BaseEstimator, RegressorMixin):
 
         return self
 
+    def get_fitted_params(self) -> dict:
+        """Return serialisable dict of all fitted parameters for warm-start / logging."""
+        if self.weights_ is None:
+            raise ValueError("Model is not fitted yet.")
+        return {
+            "weights": self.weights_.tolist(),
+            "means": self.means_.tolist(),
+            "covariances": self.covariances_.tolist(),
+            "n_components": self.n_components,
+            "covariance_type": self.covariance_type,
+        }
+
+    def load_fitted_params(self, params: dict) -> None:
+        """Restore fitted state from dict returned by get_fitted_params (skips EM)."""
+        self.weights_ = np.asarray(params["weights"], dtype=np.float64)
+        self.means_ = np.asarray(params["means"], dtype=np.float64)
+        self.covariances_ = np.asarray(params["covariances"], dtype=np.float64)
+
     def predict(self, var_alpha: float) -> np.float64:
         """
         Estimate the Value-at-Risk (VaR) at a given confidence level.
