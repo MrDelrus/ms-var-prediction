@@ -1,0 +1,47 @@
+[suite]
+name = "quick_2025"
+
+[experiments.msm_3state]
+name       = "msm_3state"
+model_type = "msm"
+
+[experiments.msm_3state.hyperparams]
+n_states         = 3
+optimizer_method = "powell"
+epsilon          = 1e-4
+
+[experiments.msm_3state.experiment_params]
+start_date   = "2025-01-01"
+end_date     = "2026-01-01"
+alpha        = 0.05
+window_shape = 60
+
+[experiments.msm_3state.logging]
+log_window_csv = true
+log_model_csv  = true
+log_var_series = true
+log_summary    = true
+
+# ---------------------------------------------------------------------------
+
+[experiments.gmm_3comp]
+name       = "gmm_3comp"
+model_type = "gmm"
+
+[experiments.gmm_3comp.hyperparams]
+n_components    = 3
+covariance_type = "full"
+tol             = 1e-4
+max_iter        = 100
+
+[experiments.gmm_3comp.experiment_params]
+start_date   = "2025-01-01"
+end_date     = "2026-01-01"
+alpha        = 0.05
+window_shape = 60
+
+[experiments.gmm_3comp.logging]
+log_window_csv = false
+log_model_csv  = true
+log_var_series = true
+log_summary    = true

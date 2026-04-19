@@ -35,12 +35,13 @@ class WandBTracker:
         project: str,
         entity: str | None = None,
         run_name: str | None = None,
+        mode: str = "offline",
     ) -> None:
         self._project = project
         self._entity = entity
         self._run_name = run_name
+        self._mode = mode
         self._run: wandb.sdk.wandb_run.Run | None = None
-        # Accumulates per-window rows keyed by experiment name
         self._window_rows: dict[str, list[dict[str, Any]]] = {}
 
     # ------------------------------------------------------------------
@@ -53,6 +54,7 @@ class WandBTracker:
             entity=self._entity,
             name=self._run_name,
             config=config or {},
+            mode=self._mode,
             reinit=True,
         )
         return self

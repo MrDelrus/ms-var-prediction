@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 import pandas as pd
 import yfinance as yf
 
 from ms_var_prediction.backtester.backtester import Backtester
+from ms_var_prediction.config import OUTPUT_DIR
 from ms_var_prediction.models.gaussian_mixture_model import GaussianMixtureVaR
 from ms_var_prediction.models.markov_swiching_model import MarkovSwitchingVaR
 from ms_var_prediction.pipeline.data import cached_history
@@ -61,6 +63,13 @@ def run_experiment(
                     tracker.log_window_row(model, exp_name, w_start, w_end)
 
             returns_eval = rets[window_shape:]
+            eval_dates = dates[window_shape:]
+
+            if log_cfg.get("log_var_series"):
+                _save_var_series(
+                    exp_name, symbol, eval_dates, returns_eval, var_series_list, alpha
+                )
+
             bt = Backtester(returns_eval, pd.array(var_series_list, dtype=float), alpha)
             test_res = bt.test()
             test_res["ticker"] = symbol
@@ -77,3 +86,23 @@ def run_experiment(
         tracker.log_model_results(exp_name, results_df)
 
     return results_df
+
+
+def _save_var_series(
+    exp_name: str,
+    symbol: str,
+    dates: pd.Index,
+    returns: pd.Series,
+    var_series: list[float],
+    alpha: float,
+) -> Path:
+    """Save per-ticker VaR series to outputs/var_series/<exp_name>/<symbol>.csv"""
+    out_dir = OUTPUT_DIR / "var_series" / exp_name
+    out_dir.mkdir(parents=True, exist_ok=True)
+    path = out_dir / f"{symbol}.csv"
+
+    df = pd.DataFrame(
+        {"date": dates, "return": returns, "var": var_series, "alpha": alpha}
+    ).set_index("date")
+    df.to_csv(path)
+    return path
