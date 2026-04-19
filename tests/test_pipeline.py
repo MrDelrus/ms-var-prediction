@@ -3,7 +3,7 @@ import pytest
 
 from ms_var_prediction.backtester.backtester import Backtester
 from ms_var_prediction.models.gaussian_mixture_model import GaussianMixtureVaR
-from ms_var_prediction.models.markov_swiching_model import MarkovSwitchingVaR
+from ms_var_prediction.models.markov_switching_model import MarkovSwitchingVaR
 from ms_var_prediction.pipeline.backtesting import rolling_returns_and_var
 
 

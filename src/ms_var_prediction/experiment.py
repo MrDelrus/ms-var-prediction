@@ -9,7 +9,8 @@ import yfinance as yf
 from ms_var_prediction.backtester.backtester import Backtester
 from ms_var_prediction.config import OUTPUT_DIR
 from ms_var_prediction.models.gaussian_mixture_model import GaussianMixtureVaR
-from ms_var_prediction.models.markov_swiching_model import MarkovSwitchingVaR
+from ms_var_prediction.models.markov_switching_model import MarkovSwitchingVaR
+from ms_var_prediction.pipeline.backtesting import rolling_returns_and_var
 from ms_var_prediction.pipeline.data import cached_history
 from ms_var_prediction.tracking.wandb_tracker import WandBTracker
 from ms_var_prediction.utils import prices_to_returns
@@ -50,19 +51,17 @@ def run_experiment(
             dates = prices.index[1:]
 
             model = build_model(model_type, hyperparams)
-            var_series_list: list[float] = []
 
-            for t in range(window_shape, len(rets)):
-                window = rets[t - window_shape : t]
-                model.fit(window)
-                var_series_list.append(float(model.predict(alpha)))
-
+            def _on_fit(m, t: int) -> None:
                 if log_cfg.get("log_window_csv"):
                     w_start = str(dates[t - window_shape].date())
                     w_end = str(dates[t - 1].date())
-                    tracker.log_window_row(model, exp_name, w_start, w_end)
+                    tracker.log_window_row(m, exp_name, w_start, w_end)
 
-            returns_eval = rets[window_shape:]
+            returns_eval, var_arr = rolling_returns_and_var(
+                model, rets, alpha, window_shape, on_fit=_on_fit
+            )
+            var_series_list: list[float] = var_arr.tolist()
             eval_dates = dates[window_shape:]
 
             if log_cfg.get("log_var_series"):

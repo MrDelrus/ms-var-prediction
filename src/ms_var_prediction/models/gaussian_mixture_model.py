@@ -58,6 +58,7 @@ class GaussianMixtureVaR(BaseEstimator, RegressorMixin):
             covariance_type=self.covariance_type,
             tol=self.tol,
             max_iter=self.max_iter,
+            warm_start=True,
         )
         self.weights_ = None
         self.means_ = None

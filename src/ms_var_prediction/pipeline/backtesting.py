@@ -12,7 +12,11 @@ from ms_var_prediction.logger import logger
 
 
 def rolling_returns_and_var(
-    model: BaseEstimator, returns: np.ndarray, alpha: float, window_shape: int
+    model: BaseEstimator,
+    returns: np.ndarray,
+    alpha: float,
+    window_shape: int,
+    on_fit=None,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Perform rolling-window model fitting and VaR prediction.
@@ -27,6 +31,8 @@ def rolling_returns_and_var(
         Significance level for VaR.
     window_shape : int
         Number of observations used for each model fit.
+    on_fit : callable(model, t) or None
+        Called after each model.fit(), receives the fitted model and window index t.
 
     Returns
     -------
@@ -43,6 +49,8 @@ def rolling_returns_and_var(
         window = returns[time - window_shape : time]
         model.fit(window)
         var_series[time_idx] = model.predict(alpha)
+        if on_fit is not None:
+            on_fit(model, time)
 
     returns = returns[window_shape:]
 

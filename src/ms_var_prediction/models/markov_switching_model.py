@@ -2,7 +2,7 @@ import numpy as np
 from scipy import optimize
 from sklearn.base import BaseEstimator, RegressorMixin
 from ms_var_prediction.utils import quantile_bisection, gaussian_mixture_cdf
-from ms_var_prediction.models.loglikelyhood import loglikelyhood_gaussian
+from ms_var_prediction.models.loglikelihood import loglikelihood_gaussian
 from typing import Any, Optional, Dict
 
 _ALLOWED_OPTIM_METHODS = ["powell", "BFGS", "L-BFGS-B", "CG", "Nelder-Mead", "TNC"]
@@ -106,7 +106,7 @@ class MarkovSwitchingVaR(BaseEstimator, RegressorMixin):
         )
 
         result = optimize.minimize(
-            lambda x: loglikelyhood_gaussian(x.astype(np.float64), returns_arr, n)[0],
+            lambda x: loglikelihood_gaussian(x.astype(np.float64), returns_arr, n)[0],
             self._params,
             method=self.optimizer_method,
             tol=self.epsilon,
@@ -115,7 +115,7 @@ class MarkovSwitchingVaR(BaseEstimator, RegressorMixin):
         )
 
         self._params = result.x.astype(np.float64)
-        _, self._state_probs = loglikelyhood_gaussian(self._params, returns_arr, n)
+        _, self._state_probs = loglikelihood_gaussian(self._params, returns_arr, n)
         return self
 
     def get_fitted_params(self) -> Dict[str, Any]:
