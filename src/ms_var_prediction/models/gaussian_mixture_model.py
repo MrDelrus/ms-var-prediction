@@ -60,9 +60,9 @@ class GaussianMixtureVaR(BaseEstimator, RegressorMixin):
             max_iter=self.max_iter,
             warm_start=True,
         )
-        self.weights_ = None
-        self.means_ = None
-        self.covariances_ = None
+        self.weights_: Optional[np.ndarray] = None
+        self.means_: Optional[np.ndarray] = None
+        self.covariances_: Optional[np.ndarray] = None
 
     def fit(self, returns: np.ndarray, y: Optional[Any] = None) -> "GaussianMixtureVaR":
         """
@@ -98,7 +98,7 @@ class GaussianMixtureVaR(BaseEstimator, RegressorMixin):
 
     def get_fitted_params(self) -> dict:
         """Return serialisable dict of all fitted parameters for warm-start / logging."""
-        if self.weights_ is None:
+        if self.weights_ is None or self.means_ is None or self.covariances_ is None:
             raise ValueError("Model is not fitted yet.")
         return {
             "weights": self.weights_.tolist(),

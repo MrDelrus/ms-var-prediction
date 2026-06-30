@@ -25,7 +25,7 @@ import pandas as pd
 import yfinance as yf
 
 from ms_var_prediction.backtester import Backtester
-from ms_var_prediction.experiment import build_model
+from ms_var_prediction.models import build_model
 from ms_var_prediction.logger import logger
 from ms_var_prediction.pipeline.data import cached_history
 from ms_var_prediction.utils import prices_to_returns
