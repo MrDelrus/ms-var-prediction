@@ -7,6 +7,17 @@ credentials/
 
 # Result
 outputs/
+archive/
+
+# Experiment tracking
+wandb/
+
+# Build artifacts
+dist/
+*.egg-info/
+
+# Logs
+*.log
 
 # Cache
 .mypy_cache/

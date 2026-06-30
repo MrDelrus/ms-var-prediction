@@ -6,11 +6,11 @@ from tqdm.auto import tqdm
 from contextlib import redirect_stderr
 from pathlib import Path
 from typing import List
-from ms_var_prediction.config import PROJECT_ROOT
+from ms_var_prediction.config import DATA_DIR
 from ms_var_prediction.logger import logger
 
 _SP500_FILE_NAME = "constituents.csv"
-_DEFAULT_CACHE_DIR = PROJECT_ROOT / "yfinance_cache"
+_DEFAULT_CACHE_DIR = DATA_DIR / "yfinance_cache"
 
 
 def get_sp500_tickers(cache_dir: Path = _DEFAULT_CACHE_DIR) -> List[str]:
