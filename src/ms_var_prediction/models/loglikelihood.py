@@ -6,7 +6,7 @@ from typing import Tuple
 
 
 @njit
-def loglikelyhood_gaussian(
+def loglikelihood_gaussian(
     params: np.ndarray, returns: np.ndarray, n_states: int
 ) -> Tuple[np.float64, np.ndarray]:
     """

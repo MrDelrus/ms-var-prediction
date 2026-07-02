@@ -58,10 +58,11 @@ class GaussianMixtureVaR(BaseEstimator, RegressorMixin):
             covariance_type=self.covariance_type,
             tol=self.tol,
             max_iter=self.max_iter,
+            warm_start=True,
         )
-        self.weights_ = None
-        self.means_ = None
-        self.covariances_ = None
+        self.weights_: Optional[np.ndarray] = None
+        self.means_: Optional[np.ndarray] = None
+        self.covariances_: Optional[np.ndarray] = None
 
     def fit(self, returns: np.ndarray, y: Optional[Any] = None) -> "GaussianMixtureVaR":
         """
@@ -94,6 +95,24 @@ class GaussianMixtureVaR(BaseEstimator, RegressorMixin):
             raise ValueError(f"Unsupported covariance_type '{self.covariance_type}'")
 
         return self
+
+    def get_fitted_params(self) -> dict:
+        """Return serialisable dict of all fitted parameters for warm-start / logging."""
+        if self.weights_ is None or self.means_ is None or self.covariances_ is None:
+            raise ValueError("Model is not fitted yet.")
+        return {
+            "weights": self.weights_.tolist(),
+            "means": self.means_.tolist(),
+            "covariances": self.covariances_.tolist(),
+            "n_components": self.n_components,
+            "covariance_type": self.covariance_type,
+        }
+
+    def load_fitted_params(self, params: dict) -> None:
+        """Restore fitted state from dict returned by get_fitted_params (skips EM)."""
+        self.weights_ = np.asarray(params["weights"], dtype=np.float64)
+        self.means_ = np.asarray(params["means"], dtype=np.float64)
+        self.covariances_ = np.asarray(params["covariances"], dtype=np.float64)
 
     def predict(self, var_alpha: float) -> np.float64:
         """

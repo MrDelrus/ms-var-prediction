@@ -2,7 +2,7 @@ import numpy as np
 from scipy import optimize
 from sklearn.base import BaseEstimator, RegressorMixin
 from ms_var_prediction.utils import quantile_bisection, gaussian_mixture_cdf
-from ms_var_prediction.models.loglikelyhood import loglikelyhood_gaussian
+from ms_var_prediction.models.loglikelihood import loglikelihood_gaussian
 from typing import Any, Optional, Dict
 
 _ALLOWED_OPTIM_METHODS = ["powell", "BFGS", "L-BFGS-B", "CG", "Nelder-Mead", "TNC"]
@@ -106,7 +106,7 @@ class MarkovSwitchingVaR(BaseEstimator, RegressorMixin):
         )
 
         result = optimize.minimize(
-            lambda x: loglikelyhood_gaussian(x.astype(np.float64), returns_arr, n)[0],
+            lambda x: loglikelihood_gaussian(x.astype(np.float64), returns_arr, n)[0],
             self._params,
             method=self.optimizer_method,
             tol=self.epsilon,
@@ -115,8 +115,31 @@ class MarkovSwitchingVaR(BaseEstimator, RegressorMixin):
         )
 
         self._params = result.x.astype(np.float64)
-        _, self._state_probs = loglikelyhood_gaussian(self._params, returns_arr, n)
+        _, self._state_probs = loglikelihood_gaussian(self._params, returns_arr, n)
         return self
+
+    def get_fitted_params(self) -> Dict[str, Any]:
+        """Return serialisable dict of all fitted parameters for warm-start / logging."""
+        if self._params is None or self._state_probs is None:
+            raise ValueError("Model is not fitted yet.")
+        n = self.n_states
+        return {
+            "mus": self._params[:n].tolist(),
+            "sigmas": self._params[n : 2 * n].tolist(),
+            "transition_matrix": self._params[2 * n :].reshape(n, n).tolist(),
+            "state_probs": self._state_probs.tolist(),
+            "n_states": n,
+        }
+
+    def load_fitted_params(self, params: Dict[str, Any]) -> None:
+        """Restore fitted state from dict returned by get_fitted_params (skips optimisation)."""
+        n = int(params["n_states"])
+        mus = np.asarray(params["mus"], dtype=np.float64)
+        sigmas = np.asarray(params["sigmas"], dtype=np.float64)
+        P_flat = np.asarray(params["transition_matrix"], dtype=np.float64).flatten()
+        self._params = np.hstack([mus, sigmas, P_flat])
+        self._state_probs = np.asarray(params["state_probs"], dtype=np.float64)
+        self.n_states = n
 
     def predict(self, var_alpha: float) -> np.float64:
         """
