@@ -4,13 +4,57 @@ import os
 
 from tqdm.auto import tqdm
 from contextlib import redirect_stderr
+from datetime import date, timedelta
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 from ms_var_prediction.config import DATA_DIR
 from ms_var_prediction.logger import logger
 
 _SP500_FILE_NAME = "constituents.csv"
 _DEFAULT_CACHE_DIR = DATA_DIR / "yfinance_cache"
+# Tolerance (calendar days) for the first/last available trading day vs the
+# requested range, to absorb weekends and holidays.
+_FULL_DATA_TOLERANCE_DAYS = 10
+
+
+def _has_full_data(prices: pd.Series, begin: str, end: str) -> bool:
+    """True if ``prices`` spans essentially the whole [begin, end) range."""
+    if prices.empty:
+        return False
+    first = prices.index[0].date()
+    last = prices.index[-1].date()
+    b = date.fromisoformat(begin)
+    e = date.fromisoformat(end)
+    tol = timedelta(days=_FULL_DATA_TOLERANCE_DAYS)
+    return first <= b + tol and last >= e - tol
+
+
+def select_universe(begin: str, end: str, limit: Optional[int] = None) -> List[str]:
+    """
+    S&P 500 tickers with full price history over [begin, end).
+
+    Ranked by average dollar volume (Close x Volume) descending; if ``limit`` is
+    given, only the top ``limit`` are returned (a limit above the available count
+    simply returns all of them).
+    """
+    scored: list[tuple[str, float]] = []
+    for symbol in get_sp500_tickers():
+        try:
+            data = cached_history(yf.Ticker(symbol), begin, end)
+            prices = data["Close"].dropna()
+            if not _has_full_data(prices, begin, end):
+                continue
+            dollar_volume = float((data["Close"] * data["Volume"]).mean())
+            scored.append((symbol, dollar_volume))
+        except Exception as exc:  # noqa: BLE001 - skip unusable tickers
+            logger.error("Skipping %s during universe selection: %s", symbol, exc)
+
+    scored.sort(key=lambda pair: pair[1], reverse=True)
+    symbols = [s for s, _ in scored]
+    if limit is not None:
+        symbols = symbols[:limit]
+    logger.info("Universe: %d full-data tickers selected", len(symbols))
+    return symbols
 
 
 def get_sp500_tickers(cache_dir: Path = _DEFAULT_CACHE_DIR) -> List[str]:
