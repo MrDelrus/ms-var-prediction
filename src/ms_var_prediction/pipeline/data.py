@@ -171,7 +171,13 @@ def cached_history(
 
     if os.path.exists(cache_file):
         logger.info("Loading %s from local cache", ticker.ticker)
-        data = pd.read_csv(cache_file, index_col=0, parse_dates=True)
+        data = pd.read_csv(cache_file, index_col=0)
+        # Coerce the index to naive datetimes explicitly: bare parse_dates=True
+        # leaves the index as strings on newer pandas, and yfinance CSVs may be
+        # tz-aware. Drop any non-date header rows that slip in.
+        idx = pd.to_datetime(data.index, errors="coerce", utc=True)
+        data.index = idx.tz_convert(None)
+        data = data[data.index.notna()]
     else:
         logger.info("Fetching %s from Yahoo Finance", ticker.ticker)
         data = ticker.history(start=start, end=end)
