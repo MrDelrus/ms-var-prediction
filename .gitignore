@@ -24,3 +24,12 @@ dist/
 .ruff_cache/
 yfinance_cache/
 __pycache__/
+
+# Local agent config (not part of the package)
+CLAUDE.md
+.claude/
+
+# Experiment artifacts: keep the per-stock results + README, not the large rest
+artifacts/*
+!artifacts/README.md
+!artifacts/results/

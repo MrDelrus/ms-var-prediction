@@ -229,15 +229,21 @@ def cmd_run(args: argparse.Namespace) -> None:
         print("Done (features only; no --alphas given).")
         return
 
-    # ---- predict + backtest
+    # ---- predict + backtest: one per-stock true/false table per alpha
     print(f"Testing VaR at alphas={args.alphas} over {len(df)} windows...")
-    results = fs.predict_and_test(df, model, n, args.alphas)
-    results.to_csv(args.results_path, index=False)
-    print(f"Saved results -> {args.results_path}")
-    print(results.to_string(index=False))
+    tables: dict[float, Any] = {}
+    for alpha in args.alphas:
+        table = fs.per_stock_tests(df, model, n, alpha)
+        out = args.results_path.with_name(
+            f"{args.results_path.stem}_a{alpha:g}{args.results_path.suffix}"
+        )
+        table.replace({True: "true", False: "false"}).to_csv(out)
+        tables[alpha] = table
+        passed = {c: int(table[c].sum()) for c in table.columns}
+        print(f"Saved results -> {out}  ({len(table)} stocks; passed {passed})")
 
     if args.monitor:
-        _log_to_wandb(args, model, n, results)
+        _log_to_wandb(args, model, n, tables)
 
 
 def _select_tickers(args: argparse.Namespace) -> list[str]:
@@ -251,7 +257,7 @@ def _select_tickers(args: argparse.Namespace) -> list[str]:
     return tickers
 
 
-def _log_to_wandb(args: argparse.Namespace, model: str, n: int, results: Any) -> None:
+def _log_to_wandb(args: argparse.Namespace, model: str, n: int, tables: dict) -> None:
     import wandb
 
     settings = wandb.Settings(init_timeout=180)
@@ -292,7 +298,9 @@ def _log_to_wandb(args: argparse.Namespace, model: str, n: int, results: Any) ->
             settings=settings,
         )
         print(f"W&B online unavailable; logging OFFLINE to {run.dir}")
-    run.log({"results": wandb.Table(dataframe=results)})
+    for alpha, table in tables.items():
+        run.log({f"passed_a{alpha:g}/{c}": int(table[c].sum()) for c in table.columns})
+        run.log({f"per_stock_a{alpha:g}": wandb.Table(dataframe=table.reset_index())})
     run.finish()
 
 
