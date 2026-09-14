@@ -166,55 +166,42 @@ def build_features(
 # ---------------------------------------------------------------------------
 
 
-def predict_and_test(
+def per_stock_tests(
     df: pd.DataFrame,
     model_type: str,
     n: int,
-    alphas: list[float],
+    alpha: float,
 ) -> pd.DataFrame:
     """
-    Evaluate VaR at each alpha and count, per test, how many stocks pass.
+    Evaluate VaR at ``alpha`` and run the five backtests for every stock.
 
-    Returns a table with one row per alpha and columns
-    ``alpha, total, <test>_passed`` for each of the five tests.
+    Returns a table indexed by ``ticker`` with one boolean column per test
+    (``<test>_passed``): True if that stock passes the test at ``alpha``.
     """
     means, stds, weights = _mixture_matrices(df, model_type, n)
     tickers = df["ticker"].to_numpy()
     returns = df["realized_return"].to_numpy(dtype=float)
-    n_rows = len(df)
 
-    records: list[dict[str, float]] = []
-    for alpha in alphas:
-        var = np.empty(n_rows, dtype=float)
-        for k in range(n_rows):
-            var[k] = float(
-                quantile_bisection(
-                    gaussian_mixture_cdf,
-                    alpha,
-                    -1.0,
-                    1.0,
-                    means[k],
-                    stds[k],
-                    weights[k],
-                )
+    var = np.empty(len(df), dtype=float)
+    for k in range(len(df)):
+        var[k] = float(
+            quantile_bisection(
+                gaussian_mixture_cdf, alpha, -1.0, 1.0, means[k], stds[k], weights[k]
             )
-        per_ticker = pd.DataFrame({"ticker": tickers, "return": returns, "var": var})
-        counts = {t: 0 for t in TEST_NAMES}
-        total = 0
-        for _, group in per_ticker.groupby("ticker"):
-            result = Backtester(
-                group["return"].to_numpy(), group["var"].to_numpy(), alpha
-            ).test()
-            total += 1
-            for t in TEST_NAMES:
-                if result[t]:
-                    counts[t] += 1
-        rec: dict[str, float] = {"alpha": alpha, "total": total}
-        rec.update({f"{t}_passed": counts[t] for t in TEST_NAMES})
-        records.append(rec)
+        )
 
-    cols = ["alpha", "total"] + [f"{t}_passed" for t in TEST_NAMES]
-    return pd.DataFrame(records, columns=cols)
+    per_ticker = pd.DataFrame({"ticker": tickers, "return": returns, "var": var})
+    rows: list[dict[str, object]] = []
+    for ticker, group in per_ticker.groupby("ticker"):
+        result = Backtester(
+            group["return"].to_numpy(), group["var"].to_numpy(), alpha
+        ).test()
+        row: dict[str, object] = {"ticker": str(ticker)}
+        row.update({f"{t}_passed": bool(result[t]) for t in TEST_NAMES})
+        rows.append(row)
+
+    cols = ["ticker"] + [f"{t}_passed" for t in TEST_NAMES]
+    return pd.DataFrame(rows, columns=cols).set_index("ticker").sort_index()
 
 
 # ---------------------------------------------------------------------------

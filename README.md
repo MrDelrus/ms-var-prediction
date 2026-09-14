@@ -80,9 +80,11 @@ backtester run -m GMM -n 3 -b 2010-01-01 -e 2026-01-01 \
 - **Features CSV** (`--features-path`): `date, ticker, realized_return,` then the
   flattened parameters. MSM → `mu_i, sigma_i, trans_i_j, state_prob_i`;
   GMM → `weight_i, mean_i, cov_i` (`cov_i` is the component std dev).
-- **Results CSV** (`--results-path`): one row per alpha —
-  `alpha, total, <test>_passed` for each of the five tests, where `total` is the
-  number of stocks tested and `<test>_passed` is how many passed.
+- **Results CSV** (`--results-path`): **one file per alpha**, written next to the
+  given path with an `_a{alpha}` suffix (e.g. `-r results/msm_n2.csv -a 0.05,0.01`
+  writes `results/msm_n2_a0.05.csv` and `results/msm_n2_a0.01.csv`). Each file is a
+  **per-stock** table — rows are tickers, columns are `<test>_passed` for the five
+  tests, and each entry is `true`/`false`.
 
 Runtime data (price cache, outputs) is anchored to the working directory;
 override with the `MS_VAR_DATA_DIR` environment variable. Randomness is seeded

@@ -150,17 +150,14 @@ def _synthetic_gmm_features(n_days=40):
     return pd.DataFrame(rows, columns=cols)
 
 
-def test_predict_and_test_shape():
-    df = _synthetic_gmm_features()
-    res = fs.predict_and_test(df, "gmm", 2, [0.05, 0.01])
-    assert list(res.columns) == ["alpha", "total"] + [
-        f"{t}_passed" for t in fs.TEST_NAMES
-    ]
-    assert len(res) == 2
-    assert (res["total"] == 1).all()
-    # passed counts are within [0, total]
-    for t in fs.TEST_NAMES:
-        assert res[f"{t}_passed"].between(0, 1).all()
+def test_per_stock_tests_shape():
+    df = _synthetic_gmm_features()  # a single ticker, "TST"
+    res = fs.per_stock_tests(df, "gmm", 2, 0.05)
+    assert res.index.name == "ticker"
+    assert list(res.index) == ["TST"]
+    assert list(res.columns) == [f"{t}_passed" for t in fs.TEST_NAMES]
+    # every entry is a boolean
+    assert all(res[c].dtype == bool for c in res.columns)
 
 
 def test_features_roundtrip_and_verify(tmp_path):
