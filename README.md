@@ -87,3 +87,14 @@ backtester run -m GMM -n 3 -b 2010-01-01 -e 2026-01-01 \
 Runtime data (price cache, outputs) is anchored to the working directory;
 override with the `MS_VAR_DATA_DIR` environment variable. Randomness is seeded
 (42) before fitting for reproducibility.
+
+## License
+
+Released under the MIT License; see [LICENSE](LICENSE).
+
+## AI Usage
+
+Anthropic's Claude models were used to build the tooling framework (the
+`backtester` CLI) and to format and organise the repository. The critical
+modelling code — the Markov-switching and Gaussian-mixture VaR models and the
+statistical backtests — was written by a human.
